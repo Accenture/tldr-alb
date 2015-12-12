@@ -1,0 +1,43 @@
+global
+    log 127.0.0.1   local0
+    log 127.0.0.1   local1 notice
+    debug
+    stats timeout 30s
+    maxconn {{with $maxconn:=key "service/haproxy/maxconn"}}{{$maxconn}}{{else}}4096{{end}}
+
+defaults
+    log global
+    option httplog
+    option dontlognull
+    mode http{{range ls "service/haproxy/timeouts"}}
+    timeout {{.Key}} {{.Value}}{{else}}
+    timeout connect 5000
+    timeout client  50000
+    timeout server  50000{{end}}
+
+# debug - SERVICE_TAGS: {{$serviceTags :=env "SERVICE_TAGS"}}{{$serviceTags}}
+# debug - SERVICE_NAME: {{$serviceName :=env "SERVICE_NAME"}}{{$serviceName}}
+# debug - TLDR_LB_SERVICE_NAME: {{$lbServiceName := env "TLDR_LB_SERVICE_NAME"}}{{$lbServiceName}}
+
+frontend http-in
+    bind *:80
+    default_backend default_backend
+
+backend default_backend
+    mode http
+    balance roundrobin
+    option forwardfor
+    option httpchk HEAD / HTTP/1.1\r\nHost:localhost{{range services}}
+  {{$name:=.Name}}
+  {{if eq $name $lbServiceName}}
+    # debug: service: {{.Name}}
+    {{range service $name}}server host_{{$name}}_{{.Address}}_{{.Port}} {{.Address}}:{{.Port}} check
+    {{end}}
+  {{end}}
+{{end}}
+
+listen stats *:1936
+    stats enable
+    stats uri /
+    stats hide-version
+    stats auth someuser:password
