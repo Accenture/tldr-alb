@@ -50,3 +50,4 @@ Alternatively, use the scripts under the ```test``` folder:
 # Known issues
 
 * Haproxy restart after updating configuration may not correctly work, and instead multiple haproxy instances are spawned. This eventually leads to a situation where haproxy configuration data is not correct and the entire load balancer has to be restarted. This is due to issue https://github.com/hashicorp/consul-template/issues/442, which should be monitored. In the meantime, we have downgraded to consul-template 0.10.0 where the issue cannot be reproduced.
+* Zero downtime Haproxy reloads: http://engineeringblog.yelp.com/2015/04/true-zero-downtime-haproxy-reloads.html
