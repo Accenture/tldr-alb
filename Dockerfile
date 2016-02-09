@@ -1,5 +1,7 @@
-FROM alpine
-MAINTAINER Ilkka Anttonen version: 0.3
+# 3.2 is the latest one with haproxy 1.5.x; unfortunately 1.6 changes the config file format
+# so the consul templates need to be updated, we'll pin to 3.2 for now
+FROM alpine:3.2
+MAINTAINER TLDR
 
 ENV CONSUL_TEMPLATE_VERSION=0.10.0
 
